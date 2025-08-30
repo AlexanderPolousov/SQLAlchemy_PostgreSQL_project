@@ -1,5 +1,6 @@
+from typing import Annotated
 from datetime import datetime
-from sqlalchemy import Integer, func
+from sqlalchemy import Integer, func, String
 from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import  AsyncAttrs, async_sessionmaker, create_async_engine
 from config import settings
@@ -19,6 +20,8 @@ class Base(AsyncAttrs, DeclarativeBase):
     @declared_attr.directive
     def __tablename__(cls)-> str:
         return cls.__name__.lower() + "s"
+
+uniq_str_an = Annotated[str, mapped_column(String(255),unique=True)]
 
 
 # DeclarativeBase: Основной класс для всех моделей, от которого будут наследоваться все таблицы (модели таблиц). Эту особенность класса мы будем использовать неоднократно.
