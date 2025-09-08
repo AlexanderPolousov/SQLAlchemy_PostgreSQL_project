@@ -2,7 +2,7 @@ from typing import Annotated
 from datetime import datetime
 from sqlalchemy import Integer, func, String
 from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
-from sqlalchemy.ext.asyncio import  AsyncAttrs, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 from config import settings
 
 DATABASE_URL = settings.get_db_url()
@@ -11,6 +11,7 @@ engine = create_async_engine(url=DATABASE_URL)
 
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
+
 class Base(AsyncAttrs, DeclarativeBase):
     __abstract__ = True
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -18,11 +19,22 @@ class Base(AsyncAttrs, DeclarativeBase):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 
     @declared_attr.directive
-    def __tablename__(cls)-> str:
+    def __tablename__(cls) -> str:
         return cls.__name__.lower() + "s"
 
-uniq_str_an = Annotated[str, mapped_column(String(255),unique=True)]
 
+def connection(method):
+    async def wrapper(*args, **kwargs):
+        async with async_session_maker() as session:
+            try:
+                return await method(*args, session=session, **kwargs)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            finally:
+                await session.close()
+
+    return wrapper
 
 # DeclarativeBase: Основной класс для всех моделей, от которого будут наследоваться все таблицы (модели таблиц). Эту особенность класса мы будем использовать неоднократно.
 # AsyncAttrs: Позволяет создавать асинхронные модели, что улучшает производительность при работе с асинхронными операциями.
@@ -49,7 +61,5 @@ uniq_str_an = Annotated[str, mapped_column(String(255),unique=True)]
 # name: Строка, которая не может быть пустой (nullable=False).
 # email: Уникальная строка, которая также не может быть пустой.
 
-#surname: Mapped[str | None]: Поле surname необязательно (nullable=True), так как тип данных указывает на то,
+# surname: Mapped[str | None]: Поле surname необязательно (nullable=True), так как тип данных указывает на то,
 # что оно может быть None. Нет необходимости явно указывать mapped_column(String, nullable=True).
-
-
