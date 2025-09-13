@@ -1,7 +1,7 @@
 from typing import Annotated
 from datetime import datetime
 from sqlalchemy import Integer, func, String
-from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column, class_mapper
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 from config import settings
 
@@ -21,6 +21,17 @@ class Base(AsyncAttrs, DeclarativeBase):
     @declared_attr.directive
     def __tablename__(cls) -> str:
         return cls.__name__.lower() + "s"
+
+    def to_dict(self)-> dict:
+        '''
+        Универсальный метод для конвертации объекта SQLAlchemy в словарь
+        :return: dict
+        '''
+        colums = class_mapper(self.__class__)
+        #этот метод возвращает объект МАППЕРА  SQLAlchemyа не список, который содержит информацию о всех колонках модели.
+        # объект МАППЕРА нельзя итерировать на прямую Нужно обращаться к .attrs, .column_attrs или .columns
+        # Возвращаем словарь всех колонок и их значений
+        return {column.key:getattr(self, column.key) for column in colums.column_attrs}
 
 
 def connection(method):

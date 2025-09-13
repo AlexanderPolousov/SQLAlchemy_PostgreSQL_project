@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy import ForeignKey, text, ARRAY, String, JSON, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from database import Base
+from dao.database import Base
 from enum_models import GenderEnum, ProfessionEnum, StatusPost, RatingEnum
 
 class User(Base):

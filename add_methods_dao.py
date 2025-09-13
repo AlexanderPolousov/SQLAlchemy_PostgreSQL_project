@@ -1,9 +1,6 @@
 from dao.dao import UserDAO
-from database import connection
-from asyncio import run
+from dao.database import connection
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from enum_models import GenderEnum, ProfessionEnum
 
 
 @connection

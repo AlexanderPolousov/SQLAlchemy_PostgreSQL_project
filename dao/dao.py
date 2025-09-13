@@ -89,6 +89,8 @@ class UserDAO(BaseDAO):
         user_info = result.scalar_one_or_none()
         return user_info
 
+
+
 class ProfileDAO(BaseDAO):
     model = Profile
 
